@@ -2,6 +2,7 @@ import { memo } from 'react'
 import type { Part } from '../db'
 import { ColorDot } from './ColorDot'
 import { Icon } from './Icon'
+import { t, useLang } from '../i18n'
 
 interface Props {
   part: Part
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export const PartRow = memo(function PartRow({ part, found, catName, onSet }: Props) {
+  useLang()
   const done = found >= part.qty
   const ids = [
     part.partNum,
@@ -22,7 +24,7 @@ export const PartRow = memo(function PartRow({ part, found, catName, onSet }: Pr
       <button
         className="part-main"
         onClick={() => !done && onSet(part, found + 1)}
-        aria-label={`${part.name}, ${part.colorName}: ${found} av ${part.qty} funne. Trykk for å legge til éin.`}
+        aria-label={t('part.aria', { name: part.name, color: part.colorName, found, qty: part.qty })}
       >
         <div className="part-img">
           {part.imgUrl ? <img src={part.imgUrl} alt="" loading="lazy" decoding="async" /> : <span className="muted small">?</span>}
@@ -47,7 +49,7 @@ export const PartRow = memo(function PartRow({ part, found, catName, onSet }: Pr
           </span>
           {(part.isSpare || part.source !== 'set') && (
             <span className="tags">
-              {part.isSpare && <span className="tag">Reserve</span>}
+              {part.isSpare && <span className="tag">{t('part.spare')}</span>}
               {part.source !== 'set' && (
                 <span className="tag fig" title={part.sourceName}>
                   <Icon name="figure" size={11} /> {part.sourceName ?? part.source}
@@ -58,18 +60,18 @@ export const PartRow = memo(function PartRow({ part, found, catName, onSet }: Pr
         </div>
       </button>
       <div className="counter">
-        <button className="icon-btn sm" onClick={() => onSet(part, found - 1)} disabled={found <= 0} aria-label="Éin færre">
+        <button className="icon-btn sm" onClick={() => onSet(part, found - 1)} disabled={found <= 0} aria-label={t('part.oneLess')}>
           <Icon name="minus" size={16} />
         </button>
         <button
           className="count"
           onClick={() => onSet(part, done ? 0 : part.qty)}
-          title={done ? 'Nullstill' : 'Merk alle som funne'}
+          title={done ? t('part.reset') : t('part.markAll')}
         >
           <b>{found}</b>
           <span className="muted">/{part.qty}</span>
         </button>
-        <button className="icon-btn sm" onClick={() => onSet(part, found + 1)} disabled={done} aria-label="Éin til">
+        <button className="icon-btn sm" onClick={() => onSet(part, found + 1)} disabled={done} aria-label={t('part.oneMore')}>
           <Icon name="plus" size={16} />
         </button>
       </div>

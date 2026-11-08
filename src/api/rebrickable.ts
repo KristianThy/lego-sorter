@@ -1,4 +1,5 @@
 import { getMeta, partKey, setMeta, type LegoSet, type Part } from '../db'
+import { t } from '../i18n'
 
 const BASE = 'https://rebrickable.com/api/v3'
 const MIN_GAP_MS = 1100 // Rebrickable allows ~1 request/second
@@ -42,7 +43,7 @@ function enqueue<T>(fn: () => Promise<T>): Promise<T> {
 
 async function request<T>(url: string, keyOverride?: string): Promise<T> {
   const key = keyOverride ?? (await getApiKey())
-  if (!key) throw new ApiError('Manglar API-nøkkel. Legg inn nøkkelen under Innstillingar.', 401)
+  if (!key) throw new ApiError(t('err.noKey'), 401)
   const full = url.startsWith('http') ? url : BASE + url
   for (let attempt = 0; attempt < 5; attempt++) {
     const res = await enqueue(() => fetch(full, { headers: { Authorization: `key ${key}`, Accept: 'application/json' } }))
@@ -51,12 +52,12 @@ async function request<T>(url: string, keyOverride?: string): Promise<T> {
       await wait(retry * 1000)
       continue
     }
-    if (res.status === 401 || res.status === 403) throw new ApiError('API-nøkkelen vart avvist av Rebrickable.', res.status)
-    if (res.status === 404) throw new ApiError('Fann ikkje settet.', 404)
-    if (!res.ok) throw new ApiError(`Rebrickable svarte ${res.status}.`, res.status)
+    if (res.status === 401 || res.status === 403) throw new ApiError(t('err.keyRejected'), res.status)
+    if (res.status === 404) throw new ApiError(t('err.notFound'), 404)
+    if (!res.ok) throw new ApiError(t('err.status', { status: res.status }), res.status)
     return (await res.json()) as T
   }
-  throw new ApiError('For mange førespurnader. Prøv igjen om litt.', 429)
+  throw new ApiError(t('err.tooMany'), 429)
 }
 
 interface Page<T> {
@@ -188,22 +189,22 @@ export type FetchProgress = (msg: string) => void
 
 export async function fetchSet(setNumRaw: string, onProgress?: FetchProgress): Promise<{ set: LegoSet; parts: Part[] }> {
   const setNum = normalizeSetNum(setNumRaw)
-  onProgress?.('Hentar settinfo …')
+  onProgress?.(t('fetch.setInfo'))
   const s = await request<RbSet>(`/lego/sets/${encodeURIComponent(setNum)}/`)
 
-  onProgress?.('Hentar brikker …')
+  onProgress?.(t('fetch.parts'))
   void getCategories().catch(() => undefined)
   const inv = await getAll<RbInvPart>(
     `/lego/sets/${encodeURIComponent(setNum)}/parts/?page_size=1000&inc_color_details=1`,
-    (n, total) => onProgress?.(`Hentar brikker … ${n}/${total}`),
+    (n, total) => onProgress?.(t('fetch.partsN', { n, total })),
   )
   const map = new Map<string, Part>()
   for (const p of inv) mergeInto(map, toPart(setNum, 'set', undefined, p))
 
-  onProgress?.('Hentar minifigurar …')
+  onProgress?.(t('fetch.minifigs'))
   const figs = await getAll<RbSetMinifig>(`/lego/sets/${encodeURIComponent(setNum)}/minifigs/?page_size=1000`)
   for (const [i, fig] of figs.entries()) {
-    onProgress?.(`Hentar minifigur ${i + 1}/${figs.length} …`)
+    onProgress?.(t('fetch.minifigN', { i: i + 1, total: figs.length }))
     const figParts = await getAll<RbInvPart>(
       `/lego/minifigs/${encodeURIComponent(fig.set_num)}/parts/?page_size=1000&inc_color_details=1`,
     )

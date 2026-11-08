@@ -41,6 +41,8 @@ På PC havnar appen i startmenyen og kan festast til oppgåvelinja.
 - Tannhjulet på settkortet opnar menyen: lenkje til LEGO sine offisielle byggeinstruksjonar,
   *Hent brikkeliste på nytt* (oppdaterer lista utan å nullstille framdrifta), nullstilling og sletting.
 - Grupper i brikkelista kan lukkast/opnast, og appen hugsar det per sett.
+- Språk: nynorsk, bokmål eller engelsk – vel under *Innstillingar → Språk*. Namn på brikker,
+  fargar og kategoriar kjem frå Rebrickable og er alltid på engelsk.
 
 ## Utvikling
 ```sh
@@ -49,5 +51,8 @@ npm run dev      # http://localhost:5173/lego-sorter/
 npm run build
 ```
 Push til `main` byggjer og deployar til GitHub Pages via Actions.
+
+All tekst i appen ligg i [`src/i18n.ts`](src/i18n.ts). Bruk `t('nøkkel')` i staden for fast tekst.
+Ein ny nøkkel må finnast på alle tre språka, elles feilar typesjekken.
 
 LEGO® er eit varemerke for LEGO Group, som ikkje står bak dette prosjektet.

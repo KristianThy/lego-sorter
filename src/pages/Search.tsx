@@ -5,8 +5,10 @@ import { db, saveSet } from '../db'
 import { Header } from '../components/Header'
 import { Icon } from '../components/Icon'
 import { go, setHref } from '../router'
+import { t, useLang } from '../i18n'
 
 export function Search() {
+  useLang()
   const [q, setQ] = useState('')
   const [results, setResults] = useState<RbSet[] | null>(null)
   const [loading, setLoading] = useState(false)
@@ -42,7 +44,7 @@ export function Search() {
 
   async function add(s: RbSet) {
     if (mine?.has(s.set_num)) return go(setHref(s.set_num))
-    setAdding({ setNum: s.set_num, msg: 'Startar …' })
+    setAdding({ setNum: s.set_num, msg: t('search.starting') })
     setError(null)
     try {
       const { set, parts } = await fetchSet(s.set_num, (msg) => setAdding({ setNum: s.set_num, msg }))
@@ -57,7 +59,7 @@ export function Search() {
 
   return (
     <>
-      <Header title="Legg til sett" back="#/" />
+      <Header title={t('search.title')} back="#/" />
       <main className="page">
         <label className="search-field">
           <Icon name="search" size={18} />
@@ -65,14 +67,14 @@ export function Search() {
             ref={inputRef}
             type="search"
             inputMode="search"
-            placeholder="Settnummer eller namn, t.d. 10270 eller Bookshop"
+            placeholder={t('search.placeholder')}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
           {loading && <span className="spinner" />}
         </label>
         {error && <p className="error">{error}</p>}
-        {results && results.length === 0 && !loading && <p className="muted center">Ingen treff.</p>}
+        {results && results.length === 0 && !loading && <p className="muted center">{t('search.noHits')}</p>}
         <div className="result-list">
           {results?.map((s) => {
             const owned = mine?.has(s.set_num)
@@ -83,11 +85,11 @@ export function Search() {
                 <div className="set-info">
                   <strong className="clamp">{s.name}</strong>
                   <span className="muted small">
-                    {s.set_num} · {s.year} · {s.num_parts} delar
+                    {s.set_num} · {s.year} · {t('search.parts', { n: s.num_parts })}
                   </span>
                   {busy && <span className="small accent">{adding?.msg}</span>}
                 </div>
-                <span className={owned ? 'pill' : 'pill add'}>{busy ? <span className="spinner" /> : owned ? 'Opne' : 'Legg til'}</span>
+                <span className={owned ? 'pill' : 'pill add'}>{busy ? <span className="spinner" /> : owned ? t('search.open') : t('search.add')}</span>
               </button>
             )
           })}

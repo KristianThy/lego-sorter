@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Icon } from './Icon'
+import { t, useLang } from '../i18n'
 
 /**
  * Horizontally scrolling chip strip with prev/next arrows that page through it.
@@ -7,6 +8,7 @@ import { Icon } from './Icon'
  * `activeKey` changes scroll the `.chip.on` element into view.
  */
 export function ChipScroller({ children, label, activeKey }: { children: ReactNode; label: string; activeKey?: unknown }) {
+  useLang()
   const ref = useRef<HTMLDivElement>(null)
   const [canPrev, setCanPrev] = useState(false)
   const [canNext, setCanNext] = useState(false)
@@ -51,10 +53,10 @@ export function ChipScroller({ children, label, activeKey }: { children: ReactNo
       <div className="chips" ref={ref} onScroll={update} aria-label={label}>
         {children}
       </div>
-      <button className={`chips-arrow prev${canPrev ? ' show' : ''}`} onClick={() => page(-1)} aria-label="Bla tilbake" tabIndex={canPrev ? 0 : -1}>
+      <button className={`chips-arrow prev${canPrev ? ' show' : ''}`} onClick={() => page(-1)} aria-label={t('set.prev')} tabIndex={canPrev ? 0 : -1}>
         <Icon name="back" size={18} />
       </button>
-      <button className={`chips-arrow next${canNext ? ' show' : ''}`} onClick={() => page(1)} aria-label="Bla fram" tabIndex={canNext ? 0 : -1}>
+      <button className={`chips-arrow next${canNext ? ' show' : ''}`} onClick={() => page(1)} aria-label={t('set.next')} tabIndex={canNext ? 0 : -1}>
         <Icon name="next" size={18} />
       </button>
     </div>

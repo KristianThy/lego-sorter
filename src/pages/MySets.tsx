@@ -5,8 +5,10 @@ import { Icon } from '../components/Icon'
 import { ProgressRing } from '../components/ProgressRing'
 import { setHref } from '../router'
 import { computeStats, progressMap } from '../stats'
+import { t, useLang } from '../i18n'
 
 function SetCard({ set }: { set: LegoSet }) {
+  useLang()
   const stats = useLiveQuery(async () => {
     const [parts, prog] = await Promise.all([
       db.parts.where('setNum').equals(set.setNum).toArray(),
@@ -25,7 +27,7 @@ function SetCard({ set }: { set: LegoSet }) {
           {set.setNum} · {set.year}
         </span>
         <span className="small">
-          {stats ? (left === 0 ? <span className="ok">Komplett</span> : `${left} brikker att`) : '…'}
+          {stats ? (left === 0 ? <span className="ok">{t('set.complete')}</span> : t('mySets.left', { n: left })) : '…'}
         </span>
       </div>
       <ProgressRing value={value} />
@@ -34,13 +36,14 @@ function SetCard({ set }: { set: LegoSet }) {
 }
 
 export function MySets({ hasKey }: { hasKey: boolean }) {
+  useLang()
   const sets = useLiveQuery(() => db.sets.orderBy('lastOpenedAt').reverse().toArray(), [])
   return (
     <>
       <Header
-        title="Mine sett"
+        title={t('mySets.title')}
         actions={
-          <a className="icon-btn" href="#/settings" aria-label="Innstillingar">
+          <a className="icon-btn" href="#/settings" aria-label={t('settings.title')}>
             <Icon name="settings" />
           </a>
         }
@@ -48,26 +51,24 @@ export function MySets({ hasKey }: { hasKey: boolean }) {
       <main className="page">
         {!hasKey && (
           <div className="callout">
-            <strong>Kom i gang</strong>
-            <p className="muted">
-              Appen hentar brikkelister frå Rebrickable. Lag ein gratis API-nøkkel og legg han inn under innstillingar.
-            </p>
+            <strong>{t('mySets.getStarted')}</strong>
+            <p className="muted">{t('mySets.getStartedText')}</p>
             <a className="btn primary" href="#/settings">
-              Legg inn API-nøkkel
+              {t('mySets.addKey')}
             </a>
           </div>
         )}
         {sets && sets.length === 0 && hasKey && (
           <div className="empty">
-            <p>Ingen sett enno.</p>
-            <p className="muted small">Søk opp eit sett på namn eller nummer for å starte.</p>
+            <p>{t('mySets.empty')}</p>
+            <p className="muted small">{t('mySets.emptyHint')}</p>
           </div>
         )}
         <div className="set-list">{sets?.map((s) => <SetCard key={s.setNum} set={s} />)}</div>
       </main>
       {hasKey && (
         <a className="fab" href="#/search">
-          <Icon name="plus" /> Legg til sett
+          <Icon name="plus" /> {t('mySets.add')}
         </a>
       )}
     </>

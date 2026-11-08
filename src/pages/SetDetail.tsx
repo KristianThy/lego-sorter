@@ -10,14 +10,16 @@ import { PartRow } from '../components/PartRow'
 import { computeStats, progressMap } from '../stats'
 import { go } from '../router'
 import { usePref } from '../prefs'
+import { t, useLang } from '../i18n'
 
 type Status = 'left' | 'found' | 'all'
 type GroupBy = 'color' | 'category' | 'source' | 'none'
 
-const STATUS_LABEL: Record<Status, string> = { left: 'Att', found: 'Funne', all: 'Alle' }
-const GROUP_LABEL: Record<GroupBy, string> = { color: 'Farge', category: 'Kategori', source: 'Sett / minifig', none: 'Ingen' }
+const STATUSES: Status[] = ['left', 'found', 'all']
+const GROUP_BYS: GroupBy[] = ['color', 'category', 'source', 'none']
 
 export function SetDetail({ setNum }: { setNum: string }) {
+  const lang = useLang()
   const set = useLiveQuery(async () => (await db.sets.get(setNum)) ?? null, [setNum])
   const parts = useLiveQuery(() => db.parts.where('setNum').equals(setNum).toArray(), [setNum])
   const progRows = useLiveQuery(() => db.progress.where('setNum').equals(setNum).toArray(), [setNum])
@@ -58,7 +60,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
     void setFound(part, found)
   }, [])
 
-  const catName = useCallback((id: number) => categories?.[id] ?? `Kategori ${id}`, [categories])
+  const catName = useCallback((id: number) => categories?.[id] ?? t('set.categoryN', { id }), [categories, lang])
 
   // List after status / spare / search filters (before colour and category filters)
   const base = useMemo(() => {
@@ -112,7 +114,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
         case 'category':
           return [`k${p.catId}`, catName(p.catId)]
         case 'source':
-          return [p.source, p.source === 'set' ? 'Settet' : `Minifigur: ${p.sourceName ?? p.source}`]
+          return [p.source, p.source === 'set' ? t('set.theSet') : t('set.minifig', { name: p.sourceName ?? p.source })]
         default:
           return ['all', '']
       }
@@ -141,7 +143,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
   async function refetch() {
     setMenu(false)
     setError(null)
-    setBusy('Hentar på nytt …')
+    setBusy(t('fetch.refetching'))
     try {
       const { set: s, parts: p } = await fetchSet(setNum, (m) => setBusy(m))
       await saveSet(s, p)
@@ -153,11 +155,11 @@ export function SetDetail({ setNum }: { setNum: string }) {
   }
   async function reset() {
     setMenu(false)
-    if (confirm('Nullstille all framdrift for dette settet?')) await resetProgress(setNum)
+    if (confirm(t('set.confirmReset'))) await resetProgress(setNum)
   }
   async function remove() {
     setMenu(false)
-    if (confirm(`Slette ${set?.name ?? setNum} og all framdrift?`)) {
+    if (confirm(t('set.confirmDelete', { name: set?.name ?? setNum }))) {
       await deleteSet(setNum)
       go('/')
     }
@@ -167,9 +169,9 @@ export function SetDetail({ setNum }: { setNum: string }) {
   if (set === null) {
     return (
       <>
-        <Header title="Fann ikkje settet" back="#/" />
+        <Header title={t('set.notFound')} back="#/" />
         <main className="page">
-          <p className="muted">Settet er ikkje lagra på denne eininga.</p>
+          <p className="muted">{t('set.notFoundText')}</p>
         </main>
       </>
     )
@@ -191,18 +193,18 @@ export function SetDetail({ setNum }: { setNum: string }) {
           {set.imgUrl && <img className="summary-img" src={set.imgUrl} alt="" />}
           <div className="summary-body">
             <div className="summary-numbers">
-              <span className="big">{left === 0 ? 'Komplett' : left}</span>
-              <span className="muted">{left === 0 ? `alle ${stats.total} brikker funne` : `brikker att av ${stats.total}`}</span>
+              <span className="big">{left === 0 ? t('set.complete') : left}</span>
+              <span className="muted">{left === 0 ? t('set.allFound', { n: stats.total }) : t('set.leftOf', { n: stats.total })}</span>
             </div>
-            <div className="bar" aria-label={`${pctInt} % funne`}>
+            <div className="bar" aria-label={t('set.pctFound', { p: pctInt })}>
               <span style={{ width: `${pct * 100}%` }} className={left === 0 ? 'done' : ''} />
             </div>
             <span className="muted small">
-              {pctInt} % · {stats.lotsDone}/{stats.lotsTotal} typar ferdige
+              {t('set.lotsDone', { p: pctInt, a: stats.lotsDone, b: stats.lotsTotal })}
             </span>
           </div>
           <div className="menu-wrap summary-menu">
-            <button className="icon-btn gear-btn" onClick={() => setMenu(!menu)} aria-label="Innstillingar for settet" aria-expanded={menu}>
+            <button className="icon-btn gear-btn" onClick={() => setMenu(!menu)} aria-label={t('set.menu')} aria-expanded={menu}>
               <Icon name="gear" size={24} stroke={1.6} />
             </button>
             {menu && (
@@ -215,12 +217,12 @@ export function SetDetail({ setNum }: { setNum: string }) {
                     rel="noopener noreferrer"
                     onClick={() => setMenu(false)}
                   >
-                    Byggeinstruksjonar ↗
+                    {t('set.instructions')}
                   </a>
-                  <button onClick={refetch}>Hent brikkeliste på nytt</button>
-                  <button onClick={reset}>Nullstill framdrift</button>
+                  <button onClick={refetch}>{t('set.refetch')}</button>
+                  <button onClick={reset}>{t('set.resetProgress')}</button>
                   <button className="danger" onClick={remove}>
-                    Slett sett
+                    {t('set.delete')}
                   </button>
                 </div>
               </>
@@ -237,9 +239,9 @@ export function SetDetail({ setNum }: { setNum: string }) {
 
         <div className="options-row">
           <label className="select">
-            <span className="muted">Kategori</span>
+            <span className="muted">{t('set.category')}</span>
             <select value={cat ?? ''} onChange={(e) => setCat(e.target.value ? Number(e.target.value) : null)}>
-              <option value="">Alle</option>
+              <option value="">{t('set.all')}</option>
               {catOptions.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name} ({c.n})
@@ -248,22 +250,22 @@ export function SetDetail({ setNum }: { setNum: string }) {
             </select>
           </label>
           <label className="select">
-            <span className="muted">Grupper</span>
+            <span className="muted">{t('set.group')}</span>
             <select value={groupBy} onChange={(e) => setGroupBy(e.target.value as GroupBy)}>
-              {(Object.keys(GROUP_LABEL) as GroupBy[]).map((g) => (
+              {GROUP_BYS.map((g) => (
                 <option key={g} value={g}>
-                  {GROUP_LABEL[g]}
+                  {t(`groupBy.${g}`)}
                 </option>
               ))}
             </select>
           </label>
           <label className="toggle">
             <input type="checkbox" checked={showSpares} onChange={(e) => setShowSpares(e.target.checked)} />
-            <span>Reservedelar</span>
+            <span>{t('set.spares')}</span>
           </label>
           {groupable && (
             <button className="link-btn" onClick={toggleAll}>
-              {allCollapsed ? 'Opne alle' : 'Lukk alle'}
+              {allCollapsed ? t('set.expandAll') : t('set.collapseAll')}
             </button>
           )}
         </div>
@@ -271,20 +273,20 @@ export function SetDetail({ setNum }: { setNum: string }) {
         <div className="toolbar">
           <div className="toolbar-row">
             <div className="segmented" role="tablist">
-              {(Object.keys(STATUS_LABEL) as Status[]).map((s) => (
+              {STATUSES.map((s) => (
                 <button key={s} role="tab" aria-selected={status === s} className={status === s ? 'on' : ''} onClick={() => setStatus(s)}>
-                  {STATUS_LABEL[s]}
+                  {t(`status.${s}`)}
                 </button>
               ))}
             </div>
             <label className="search-field compact">
               <Icon name="search" size={16} />
-              <input type="search" placeholder="Søk brikke" value={q} onChange={(e) => setQ(e.target.value)} />
+              <input type="search" placeholder={t('set.searchPart')} value={q} onChange={(e) => setQ(e.target.value)} />
             </label>
           </div>
-          <ChipScroller label="Fargar" activeKey={color}>
+          <ChipScroller label={t('set.colors')} activeKey={color}>
             <button className={color == null ? 'chip on' : 'chip'} onClick={() => setColor(null)}>
-              Alle fargar
+              {t('set.allColors')}
             </button>
             {colorChips.map((c) => (
               <button key={c.id} className={color === c.id ? 'chip on' : 'chip'} onClick={() => setColor(color === c.id ? null : c.id)} title={c.name}>
@@ -300,11 +302,11 @@ export function SetDetail({ setNum }: { setNum: string }) {
           <div className="empty">
             {status === 'left' && left === 0 && !q && color == null && cat == null ? (
               <>
-                <p>Alle brikkene er funne 🎉</p>
-                <p className="muted small">Settet er komplett.</p>
+                <p>{t('set.allFoundTitle')}</p>
+                <p className="muted small">{t('set.isComplete')}</p>
               </>
             ) : (
-              <p className="muted">Ingen brikker passar filteret.</p>
+              <p className="muted">{t('set.noMatch')}</p>
             )}
           </div>
         )}
@@ -322,8 +324,8 @@ export function SetDetail({ setNum }: { setNum: string }) {
                     {g.rgb && <ColorDot rgb={g.rgb} trans={g.trans} />}
                     <span>{g.label}</span>
                     <span className="muted">
-                      {g.parts.reduce((n, p) => n + (p.isSpare ? 0 : Math.max(0, p.qty - (prog.get(p.key) ?? 0))), 0)} att
-                      {isCollapsed && ` · ${g.parts.length} typar`}
+                      {t('set.groupLeft', { n: g.parts.reduce((n, p) => n + (p.isSpare ? 0 : Math.max(0, p.qty - (prog.get(p.key) ?? 0))), 0) })}
+                      {isCollapsed && t('set.groupLots', { n: g.parts.length })}
                     </span>
                   </button>
                 </h2>

@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie'
+import { t } from './i18n'
 
 export interface LegoSet {
   setNum: string
@@ -124,7 +125,7 @@ export async function exportAll(): Promise<ExportFile> {
 
 export async function importAll(data: ExportFile) {
   if (data?.app !== 'brikkesjekk' || !Array.isArray(data.sets)) {
-    throw new Error('Fila ser ikkje ut til å vere ein Brikkesjekk-eksport.')
+    throw new Error(t('err.badImport'))
   }
   await db.transaction('rw', db.sets, db.parts, db.progress, async () => {
     await db.sets.bulkPut(data.sets)
