@@ -356,6 +356,49 @@ select:focus {
 .set-info strong {
   font-weight: 600;
 }
+.one-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Own categories ---------- */
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.tag {
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.tag-list:hover .tag {
+  border-color: var(--muted);
+}
+.tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+.tag-options .chip svg {
+  margin-left: -4px;
+}
+.input.plain {
+  font-family: inherit;
+  font-size: 16px;
+}
 
 .ring-bg {
   stroke: var(--surface-2);

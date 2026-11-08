@@ -8,6 +8,8 @@ export interface LegoSet {
   numParts: number
   imgUrl: string | null
   themeId?: number
+  /** User-defined categories (free text). Not from Rebrickable. */
+  tags?: string[]
   addedAt: number
   lastOpenedAt: number
   fetchedAt: number
@@ -78,7 +80,7 @@ export async function setMeta(k: string, v: unknown) {
 export async function saveSet(set: LegoSet, parts: Part[]) {
   await db.transaction('rw', db.sets, db.parts, async () => {
     const existing = await db.sets.get(set.setNum)
-    await db.sets.put({ ...set, addedAt: existing?.addedAt ?? set.addedAt })
+    await db.sets.put({ ...set, addedAt: existing?.addedAt ?? set.addedAt, tags: existing?.tags ?? set.tags })
     await db.parts.where('setNum').equals(set.setNum).delete()
     await db.parts.bulkPut(parts)
   })
@@ -99,6 +101,22 @@ export async function deleteSet(setNum: string) {
     await db.parts.where('setNum').equals(setNum).delete()
     await db.progress.where('setNum').equals(setNum).delete()
   })
+}
+
+export function normalizeTag(name: string) {
+  return name.trim().replace(/\s+/g, ' ')
+}
+
+export async function setSetTags(setNum: string, tags: string[]) {
+  const clean = [...new Set(tags.map(normalizeTag).filter(Boolean))].sort((a, b) => a.localeCompare(b))
+  await db.sets.update(setNum, { tags: clean })
+}
+
+/** Every user-defined category in use, sorted. */
+export async function allTags() {
+  const out = new Set<string>()
+  await db.sets.each((s) => s.tags?.forEach((tag) => out.add(tag)))
+  return [...out].sort((a, b) => a.localeCompare(b))
 }
 
 export async function touchSet(setNum: string) {

@@ -41,8 +41,12 @@ På PC havnar appen i startmenyen og kan festast til oppgåvelinja.
 - Tannhjulet på settkortet opnar menyen: lenkje til LEGO sine offisielle byggeinstruksjonar,
   *Hent brikkeliste på nytt* (oppdaterer lista utan å nullstille framdrifta), nullstilling og sletting.
 - Grupper i brikkelista kan lukkast/opnast, og appen hugsar det per sett.
+- *Mine sett* kan grupperast etter **tema** (hovudtema frå Rebrickable, t.d. Star Wars eller
+  Technic – undertemaet står på kortet) eller etter **eigne kategoriar**. Eigne kategoriar
+  (t.d. «Bygd», «Til sal») set du via tannhjulet → *Eigne kategoriar …*. Eit sett kan vere i
+  fleire, og dei blir med i eksport/import.
 - Språk: nynorsk, bokmål eller engelsk – vel under *Innstillingar → Språk*. Namn på brikker,
-  fargar og kategoriar kjem frå Rebrickable og er alltid på engelsk.
+  fargar, kategoriar og tema kjem frå Rebrickable og er alltid på engelsk.
 
 ## Utvikling
 ```sh

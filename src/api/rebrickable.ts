@@ -156,6 +156,35 @@ export async function getCategories(): Promise<Record<number, string>> {
   return map
 }
 
+export interface ThemeInfo {
+  name: string
+  parentId: number | null
+}
+export type Themes = Record<number, ThemeInfo>
+
+/** All Rebrickable themes (~500, one request). Cached; pass `force` to refresh, e.g. when a set has an unknown theme. */
+export async function getThemes(force = false): Promise<Themes> {
+  if (!force) {
+    const cached = await getMeta<Themes>('themes')
+    if (cached) return cached
+  }
+  const list = await getAll<{ id: number; name: string; parent_id: number | null }>('/lego/themes/?page_size=1000')
+  const map: Themes = Object.fromEntries(list.map((th) => [th.id, { name: th.name, parentId: th.parent_id }]))
+  await setMeta('themes', map)
+  return map
+}
+
+/** Theme chain from top-level theme down to `id`, e.g. [Star Wars, Ultimate Collector Series]. */
+export function themePath(themes: Themes, id: number): { id: number; name: string }[] {
+  const path: { id: number; name: string }[] = []
+  let cur: number | null = id
+  while (cur != null && themes[cur] && path.length < 10) {
+    path.unshift({ id: cur, name: themes[cur].name })
+    cur = themes[cur].parentId
+  }
+  return path
+}
+
 function toPart(setNum: string, source: string, sourceName: string | undefined, p: RbInvPart, multiplier = 1): Part {
   return {
     key: partKey(setNum, source, p.part.part_num, p.color.id, p.is_spare),

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, deleteSet, getMeta, resetProgress, saveSet, setFound, touchSet, type Part } from '../db'
-import { fetchSet, getCategories } from '../api/rebrickable'
+import { fetchSet, getCategories, themePath, type Themes } from '../api/rebrickable'
 import { Header } from '../components/Header'
 import { Icon } from '../components/Icon'
 import { ColorDot } from '../components/ColorDot'
 import { ChipScroller } from '../components/ChipScroller'
 import { PartRow } from '../components/PartRow'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { TagDialog } from '../components/TagDialog'
 import { computeStats, progressMap } from '../stats'
 import { go } from '../router'
 import { usePref } from '../prefs'
@@ -25,6 +26,8 @@ export function SetDetail({ setNum }: { setNum: string }) {
   const parts = useLiveQuery(() => db.parts.where('setNum').equals(setNum).toArray(), [setNum])
   const progRows = useLiveQuery(() => db.progress.where('setNum').equals(setNum).toArray(), [setNum])
   const categories = useLiveQuery(async () => (await getMeta<Record<number, string>>('categories')) ?? null, [])
+  const themes = useLiveQuery(async () => (await getMeta<Themes>('themes')) ?? null, [])
+  const [tagsOpen, setTagsOpen] = useState(false)
 
   const [status, setStatus] = usePref<Status>('status', 'left')
   const [groupBy, setGroupBy] = usePref<GroupBy>('groupBy', 'color')
@@ -189,13 +192,15 @@ export function SetDetail({ setNum }: { setNum: string }) {
   const pct = stats.total ? stats.found / stats.total : 0
   const left = stats.total - stats.found
   const pctInt = Math.floor(pct * 100)
+  const themeName = themes && set.themeId != null ? themePath(themes, set.themeId).map((p) => p.name).join(' › ') : ''
+  const tags = set.tags ?? []
 
   return (
     <>
       <Header
         back="#/"
         title={set.name}
-        sub={`${set.setNum} · ${set.year}`}
+        sub={`${set.setNum} · ${set.year}${themeName ? ` · ${themeName}` : ''}`}
       />
       <main className="page detail">
         <section className="summary">
@@ -211,6 +216,15 @@ export function SetDetail({ setNum }: { setNum: string }) {
             <span className="muted small">
               {t('set.lotsDone', { p: pctInt, a: stats.lotsDone, b: stats.lotsTotal })}
             </span>
+            {tags.length > 0 && (
+              <button className="tag-list" onClick={() => setTagsOpen(true)} aria-label={t('tags.edit')} title={t('tags.edit')}>
+                {tags.map((tag) => (
+                  <span key={tag} className="tag">
+                    {tag}
+                  </span>
+                ))}
+              </button>
+            )}
           </div>
           <div className="menu-wrap summary-menu">
             <button className="icon-btn gear-btn" onClick={() => setMenu(!menu)} aria-label={t('set.menu')} aria-expanded={menu}>
@@ -228,6 +242,14 @@ export function SetDetail({ setNum }: { setNum: string }) {
                   >
                     {t('set.instructions')}
                   </a>
+                  <button
+                    onClick={() => {
+                      setMenu(false)
+                      setTagsOpen(true)
+                    }}
+                  >
+                    {t('tags.menu')}
+                  </button>
                   <button onClick={refetch}>{t('set.refetch')}</button>
                   <button onClick={reset}>{t('set.resetProgress')}</button>
                   <button className="danger" onClick={remove}>
@@ -371,6 +393,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
           onCancel={() => setAsk(null)}
         />
       )}
+      {tagsOpen && <TagDialog setNum={set.setNum} current={tags} onClose={() => setTagsOpen(false)} />}
     </>
   )
 }
