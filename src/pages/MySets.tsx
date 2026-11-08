@@ -240,55 +240,22 @@ export function MySets({ hasKey }: { hasKey: boolean }) {
 
   return (
     <>
-      <Header
-        title={selecting ? t('mySets.selectedN', { n: chosen.length }) : t('mySets.title')}
-        actions={
-          selecting ? (
-            <button className="icon-btn" onClick={exitSelect} aria-label={t('mySets.exitSelect')} title={t('mySets.exitSelect')}>
-              <Icon name="x" />
-            </button>
-          ) : (
-            <>
-              {sets && sets.length > 0 && (
-                <button className="icon-btn" onClick={() => startSelect()} aria-label={t('mySets.select')} title={t('mySets.select')}>
-                  <Icon name="select" />
-                </button>
-              )}
-              <a className="icon-btn" href="#/settings" aria-label={t('settings.title')}>
-                <Icon name="settings" />
-              </a>
-            </>
-          )
-        }
-      />
+      <Header title={selecting ? t('mySets.selectedN', { n: chosen.length }) : t('mySets.title')} />
       <main className="page">
-        {!hasKey && (
-          <div className="callout">
-            <strong>{t('mySets.getStarted')}</strong>
-            <p className="muted">{t('mySets.getStartedText')}</p>
-            <a className="btn primary" href="#/settings">
-              {t('mySets.addKey')}
-            </a>
-          </div>
-        )}
-        {sets && sets.length === 0 && hasKey && (
-          <div className="empty">
-            <p>{t('mySets.empty')}</p>
-            <p className="muted small">{t('mySets.emptyHint')}</p>
-          </div>
-        )}
-        {sets && sets.length > 0 && (
+        {sets && (
           <div className="options-row">
-            <label className="select">
-              <span className="muted">{t('set.group')}</span>
-              <select value={groupBy} onChange={(e) => setGroupBy(e.target.value as SetGroupBy)}>
-                {SET_GROUP_BYS.map((g) => (
-                  <option key={g} value={g}>
-                    {t(`setGroup.${g}`)}
-                  </option>
-                ))}
-              </select>
-            </label>
+            {sets.length > 0 && (
+              <label className="select">
+                <span className="muted">{t('set.group')}</span>
+                <select value={groupBy} onChange={(e) => setGroupBy(e.target.value as SetGroupBy)}>
+                  {SET_GROUP_BYS.map((g) => (
+                    <option key={g} value={g}>
+                      {t(`setGroup.${g}`)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
             {grouped && groups.length > 1 && (
               <button className="link-btn" onClick={toggleAll}>
                 {allCollapsed ? t('set.expandAll') : t('set.collapseAll')}
@@ -302,6 +269,44 @@ export function MySets({ hasKey }: { hasKey: boolean }) {
                 {allSelected ? t('mySets.selectNone') : t('mySets.selectAll')}
               </button>
             )}
+            <div className="options-actions">
+              {selecting ? (
+                <button className="icon-btn sm" onClick={exitSelect} aria-label={t('mySets.exitSelect')} title={t('mySets.exitSelect')}>
+                  <Icon name="x" />
+                </button>
+              ) : (
+                <>
+                  {sets.length > 0 && (
+                    <button className="icon-btn sm" onClick={() => startSelect()} aria-label={t('mySets.select')} title={t('mySets.select')}>
+                      <Icon name="select" />
+                    </button>
+                  )}
+                  <a className="icon-btn sm" href="#/settings" aria-label={t('settings.title')} title={t('settings.title')}>
+                    <Icon name="settings" />
+                  </a>
+                  {hasKey && (
+                    <a className="btn primary add-set" href="#/search">
+                      <Icon name="plus" size={18} /> {t('mySets.add')}
+                    </a>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        )}
+        {!hasKey && (
+          <div className="callout">
+            <strong>{t('mySets.getStarted')}</strong>
+            <p className="muted">{t('mySets.getStartedText')}</p>
+            <a className="btn primary" href="#/settings">
+              {t('mySets.addKey')}
+            </a>
+          </div>
+        )}
+        {sets && sets.length === 0 && hasKey && (
+          <div className="empty">
+            <p>{t('mySets.empty')}</p>
+            <p className="muted small">{t('mySets.emptyHint')}</p>
           </div>
         )}
         {groups.map((g) => {
@@ -356,7 +361,7 @@ export function MySets({ hasKey }: { hasKey: boolean }) {
           )
         })}
       </main>
-      {selecting ? (
+      {selecting && (
         <div className="select-bar">
           <button className="btn" disabled={chosen.length === 0} onClick={() => setAsk('reset')}>
             <Icon name="refresh" size={18} /> {t('set.resetProgress')}
@@ -365,12 +370,6 @@ export function MySets({ hasKey }: { hasKey: boolean }) {
             <Icon name="x" size={18} /> {t('set.deleteBtn')}
           </button>
         </div>
-      ) : (
-        hasKey && (
-          <a className="fab" href="#/search">
-            <Icon name="plus" /> {t('mySets.add')}
-          </a>
-        )
       )}
       {ask && (
         <ConfirmDialog
