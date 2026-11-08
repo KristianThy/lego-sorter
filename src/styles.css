@@ -507,6 +507,10 @@ select:focus {
   font-size: 14px;
   color: var(--muted);
 }
+.refresh-btn:not(:disabled) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
 .segmented button.on {
   background: var(--surface);
   color: var(--text);
@@ -895,6 +899,62 @@ select:focus {
 }
 .menu button.danger {
   color: var(--accent);
+}
+
+/* ---------- Confirm dialog ---------- */
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(0 0 0 / 0.4);
+  animation: fade-in 0.15s ease;
+}
+.dialog {
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.2);
+  animation: pop-in 0.15s ease;
+}
+.dialog h2 {
+  margin: 0 0 6px;
+  font-size: 17px;
+  line-height: 1.35;
+}
+.dialog p {
+  margin: 0;
+  font-size: 14px;
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+.btn.danger {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+.btn.danger:hover {
+  opacity: 0.9;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
 }
 
 @media (max-width: 520px) {

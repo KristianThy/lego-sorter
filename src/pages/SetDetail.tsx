@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon'
 import { ColorDot } from '../components/ColorDot'
 import { ChipScroller } from '../components/ChipScroller'
 import { PartRow } from '../components/PartRow'
+import { ConfirmDialog } from '../components/ConfirmDialog'
 import { computeStats, progressMap } from '../stats'
 import { go } from '../router'
 import { usePref } from '../prefs'
@@ -36,6 +37,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
   const [cat, setCat] = useState<number | null>(null)
   const [q, setQ] = useState('')
   const [menu, setMenu] = useState(false)
+  const [ask, setAsk] = useState<'reset' | 'delete' | null>(null)
   const [busy, setBusy] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   // Rows completed while viewing stay visible (dimmed) until a filter changes,
@@ -153,13 +155,20 @@ export function SetDetail({ setNum }: { setNum: string }) {
       setBusy(null)
     }
   }
-  async function reset() {
+  function reset() {
     setMenu(false)
-    if (confirm(t('set.confirmReset'))) await resetProgress(setNum)
+    setAsk('reset')
   }
-  async function remove() {
+  function remove() {
     setMenu(false)
-    if (confirm(t('set.confirmDelete', { name: set?.name ?? setNum }))) {
+    setAsk('delete')
+  }
+  async function onConfirm() {
+    const action = ask
+    setAsk(null)
+    if (action === 'reset') {
+      await resetProgress(setNum)
+    } else if (action === 'delete') {
       await deleteSet(setNum)
       go('/')
     }
@@ -279,6 +288,17 @@ export function SetDetail({ setNum }: { setNum: string }) {
                 </button>
               ))}
             </div>
+            {status === 'left' && (
+              <button
+                className="icon-btn refresh-btn"
+                onClick={() => setSticky(new Set())}
+                disabled={sticky.size === 0}
+                aria-label={t('set.refresh')}
+                title={t('set.refresh')}
+              >
+                <Icon name="refresh" size={18} />
+              </button>
+            )}
             <label className="search-field compact">
               <Icon name="search" size={16} />
               <input type="search" placeholder={t('set.searchPart')} value={q} onChange={(e) => setQ(e.target.value)} />
@@ -341,6 +361,16 @@ export function SetDetail({ setNum }: { setNum: string }) {
           )
         })}
       </main>
+      {ask && (
+        <ConfirmDialog
+          title={ask === 'reset' ? t('set.confirmReset') : t('set.confirmDelete', { name: set.name })}
+          text={t('set.cannotUndo')}
+          confirmLabel={ask === 'reset' ? t('set.resetBtn') : t('set.deleteBtn')}
+          danger
+          onConfirm={onConfirm}
+          onCancel={() => setAsk(null)}
+        />
+      )}
     </>
   )
 }
