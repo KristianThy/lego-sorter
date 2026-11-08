@@ -95,6 +95,18 @@ export async function resetProgress(setNum: string) {
   await db.progress.where('setNum').equals(setNum).delete()
 }
 
+export async function resetProgressMany(setNums: string[]) {
+  await db.progress.where('setNum').anyOf(setNums).delete()
+}
+
+export async function deleteSets(setNums: string[]) {
+  await db.transaction('rw', db.sets, db.parts, db.progress, async () => {
+    await db.sets.bulkDelete(setNums)
+    await db.parts.where('setNum').anyOf(setNums).delete()
+    await db.progress.where('setNum').anyOf(setNums).delete()
+  })
+}
+
 export async function deleteSet(setNum: string) {
   await db.transaction('rw', db.sets, db.parts, db.progress, async () => {
     await db.sets.delete(setNum)

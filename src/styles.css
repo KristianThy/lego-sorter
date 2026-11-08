@@ -1039,3 +1039,58 @@ select:focus {
   flex-wrap: wrap;
   margin-bottom: 10px;
 }
+
+/* ---------- Multi-select on My sets ---------- */
+.set-card {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.set-card.selected {
+  border-color: var(--text);
+  background: var(--surface-2);
+}
+.select-check {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--muted);
+  color: var(--bg);
+}
+.set-card.selected .select-check,
+.group-select.all .select-check,
+.group-select.some .select-check {
+  background: var(--text);
+  border-color: var(--text);
+}
+.group-head:has(.group-select) {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.group-head button.group-select {
+  width: auto;
+  flex: none;
+  padding: 2px 9px 2px 13px;
+}
+.select-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  max-width: calc(100% - 32px);
+  padding: 8px;
+  border-radius: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+  z-index: 20;
+}
+.select-bar .btn {
+  min-width: 0;
+}

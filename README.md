@@ -45,6 +45,9 @@ På PC havnar appen i startmenyen og kan festast til oppgåvelinja.
   Technic – undertemaet står på kortet) eller etter **eigne kategoriar**. Eigne kategoriar
   (t.d. «Bygd», «Til sal») set du via tannhjulet → *Eigne kategoriar …*. Eit sett kan vere i
   fleire, og dei blir med i eksport/import.
+- Vel fleire sett samtidig i *Mine sett* med avkryssingsknappen øvst (eller langt trykk på eit
+  sett). Då kan du nullstille framdrifta for eller slette alle dei valde på ein gong. Avkryssinga
+  ved kvar gruppe vel heile gruppa.
 - Språk: nynorsk, bokmål eller engelsk – vel under *Innstillingar → Språk*. Namn på brikker,
   fargar, kategoriar og tema kjem frå Rebrickable og er alltid på engelsk.
 
