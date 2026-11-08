@@ -1,5 +1,10 @@
 const paths: Record<string, string> = {
   back: 'M15 18l-6-6 6-6',
+  next: 'M9 18l6-6-6-6',
+  // LEGO Technic gear: 8 teeth + cross-axle hole
+  gear:
+    'M19.76 10.07L22.40 10.52L22.40 13.48L19.76 13.93A8 8 0 0 1 18.85 16.13L20.40 18.30L18.30 20.40L16.13 18.85A8 8 0 0 1 13.93 19.76L13.48 22.40L10.52 22.40L10.07 19.76A8 8 0 0 1 7.87 18.85L5.70 20.40L3.60 18.30L5.15 16.13A8 8 0 0 1 4.24 13.93L1.60 13.48L1.60 10.52L4.24 10.07A8 8 0 0 1 5.15 7.87L3.60 5.70L5.70 3.60L7.87 5.15A8 8 0 0 1 10.07 4.24L10.52 1.60L13.48 1.60L13.93 4.24A8 8 0 0 1 16.13 5.15L18.30 3.60L20.40 5.70L18.85 7.87A8 8 0 0 1 19.76 10.07Z' +
+    'M10.8 8.6h2.4v2.2h2.2v2.4h-2.2v2.2h-2.4v-2.2H8.6v-2.4h2.2z',
   plus: 'M12 5v14M5 12h14',
   minus: 'M5 12h14',
   search: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.35-4.35',
@@ -11,9 +16,9 @@ const paths: Record<string, string> = {
   figure: 'M12 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 22v-7a6 6 0 0 1 12 0v7',
 }
 
-export function Icon({ name, size = 20 }: { name: keyof typeof paths | string; size?: number }) {
+export function Icon({ name, size = 20, stroke = 2 }: { name: keyof typeof paths | string; size?: number; stroke?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d={paths[name]} />
     </svg>
   )

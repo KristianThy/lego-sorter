@@ -5,6 +5,7 @@ import { fetchSet, getCategories } from '../api/rebrickable'
 import { Header } from '../components/Header'
 import { Icon } from '../components/Icon'
 import { ColorDot } from '../components/ColorDot'
+import { ChipScroller } from '../components/ChipScroller'
 import { PartRow } from '../components/PartRow'
 import { computeStats, progressMap } from '../stats'
 import { go } from '../router'
@@ -25,6 +26,10 @@ export function SetDetail({ setNum }: { setNum: string }) {
   const [status, setStatus] = usePref<Status>('status', 'left')
   const [groupBy, setGroupBy] = usePref<GroupBy>('groupBy', 'color')
   const [showSpares, setShowSpares] = usePref('showSpares', true)
+  const [collapsedList, setCollapsedList] = usePref<string[]>(`collapsed.${setNum}`, [])
+  const collapsed = useMemo(() => new Set(collapsedList), [collapsedList])
+  const toggleGroup = (key: string) =>
+    setCollapsedList(collapsed.has(key) ? collapsedList.filter((k) => k !== key) : [...collapsedList, key])
   const [color, setColor] = useState<number | null>(null)
   const [cat, setCat] = useState<number | null>(null)
   const [q, setQ] = useState('')
@@ -125,6 +130,13 @@ export function SetDetail({ setNum }: { setNum: string }) {
   }, [base, color, cat, groupBy, catName])
 
   const visibleCount = groups.reduce((n, g) => n + g.parts.length, 0)
+  const groupable = groupBy !== 'none' && groups.length > 1
+  const allCollapsed = groupable && groups.every((g) => collapsed.has(g.key))
+  const toggleAll = () => {
+    const keys = new Set(groups.map((g) => g.key))
+    const others = collapsedList.filter((k) => !keys.has(k))
+    setCollapsedList(allCollapsed ? others : [...others, ...keys])
+  }
 
   async function refetch() {
     setMenu(false)
@@ -173,25 +185,6 @@ export function SetDetail({ setNum }: { setNum: string }) {
         back="#/"
         title={set.name}
         sub={`${set.setNum} · ${set.year}`}
-        actions={
-          <div className="menu-wrap">
-            <button className="icon-btn" onClick={() => setMenu(!menu)} aria-label="Meny" aria-expanded={menu}>
-              <Icon name="more" />
-            </button>
-            {menu && (
-              <>
-                <div className="menu-backdrop" onClick={() => setMenu(false)} />
-                <div className="menu" role="menu">
-                  <button onClick={refetch}>Hent brikkeliste på nytt</button>
-                  <button onClick={reset}>Nullstill framdrift</button>
-                  <button className="danger" onClick={remove}>
-                    Slett sett
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        }
       />
       <main className="page detail">
         <section className="summary">
@@ -207,6 +200,31 @@ export function SetDetail({ setNum }: { setNum: string }) {
             <span className="muted small">
               {pctInt} % · {stats.lotsDone}/{stats.lotsTotal} typar ferdige
             </span>
+          </div>
+          <div className="menu-wrap summary-menu">
+            <button className="icon-btn gear-btn" onClick={() => setMenu(!menu)} aria-label="Innstillingar for settet" aria-expanded={menu}>
+              <Icon name="gear" size={24} stroke={1.6} />
+            </button>
+            {menu && (
+              <>
+                <div className="menu-backdrop" onClick={() => setMenu(false)} />
+                <div className="menu" role="menu">
+                  <a
+                    href={`https://www.lego.com/service/building-instructions/${set.setNum.replace(/-\d+$/, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setMenu(false)}
+                  >
+                    Byggeinstruksjonar ↗
+                  </a>
+                  <button onClick={refetch}>Hent brikkeliste på nytt</button>
+                  <button onClick={reset}>Nullstill framdrift</button>
+                  <button className="danger" onClick={remove}>
+                    Slett sett
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </section>
 
@@ -243,6 +261,11 @@ export function SetDetail({ setNum }: { setNum: string }) {
             <input type="checkbox" checked={showSpares} onChange={(e) => setShowSpares(e.target.checked)} />
             <span>Reservedelar</span>
           </label>
+          {groupable && (
+            <button className="link-btn" onClick={toggleAll}>
+              {allCollapsed ? 'Opne alle' : 'Lukk alle'}
+            </button>
+          )}
         </div>
 
         <div className="toolbar">
@@ -259,7 +282,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
               <input type="search" placeholder="Søk brikke" value={q} onChange={(e) => setQ(e.target.value)} />
             </label>
           </div>
-          <div className="chips" aria-label="Fargar">
+          <ChipScroller label="Fargar" activeKey={color}>
             <button className={color == null ? 'chip on' : 'chip'} onClick={() => setColor(null)}>
               Alle fargar
             </button>
@@ -270,7 +293,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
                 <span className="chip-n">{c.n}</span>
               </button>
             ))}
-          </div>
+          </ChipScroller>
         </div>
 
         {visibleCount === 0 && (
@@ -286,22 +309,35 @@ export function SetDetail({ setNum }: { setNum: string }) {
           </div>
         )}
 
-        {groups.map((g) => (
-          <section key={g.key} className="group">
-            {g.label && (
-              <h2 className="group-head">
-                {g.rgb && <ColorDot rgb={g.rgb} trans={g.trans} />}
-                <span>{g.label}</span>
-                <span className="muted">{g.parts.reduce((n, p) => n + (p.isSpare ? 0 : Math.max(0, p.qty - (prog.get(p.key) ?? 0))), 0)} att</span>
-              </h2>
-            )}
-            <div className="part-list">
-              {g.parts.map((p) => (
-                <PartRow key={p.key} part={p} found={prog.get(p.key) ?? 0} catName={catName(p.catId)} onSet={onSet} />
-              ))}
-            </div>
-          </section>
-        ))}
+        {groups.map((g) => {
+          const isCollapsed = !!g.label && collapsed.has(g.key)
+          return (
+            <section key={g.key} className={isCollapsed ? 'group collapsed' : 'group'}>
+              {g.label && (
+                <h2 className="group-head">
+                  <button onClick={() => toggleGroup(g.key)} aria-expanded={!isCollapsed}>
+                    <span className="group-chev">
+                      <Icon name="next" size={16} />
+                    </span>
+                    {g.rgb && <ColorDot rgb={g.rgb} trans={g.trans} />}
+                    <span>{g.label}</span>
+                    <span className="muted">
+                      {g.parts.reduce((n, p) => n + (p.isSpare ? 0 : Math.max(0, p.qty - (prog.get(p.key) ?? 0))), 0)} att
+                      {isCollapsed && ` · ${g.parts.length} typar`}
+                    </span>
+                  </button>
+                </h2>
+              )}
+              {!isCollapsed && (
+                <div className="part-list">
+                  {g.parts.map((p) => (
+                    <PartRow key={p.key} part={p} found={prog.get(p.key) ?? 0} catName={catName(p.catId)} onSet={onSet} />
+                  ))}
+                </div>
+              )}
+            </section>
+          )
+        })}
       </main>
     </>
   )
