@@ -257,6 +257,11 @@ select:focus {
   margin: 4px 0;
 }
 
+.toggle.multi-toggle {
+  display: flex;
+  width: fit-content;
+  margin: -4px 0 14px 2px;
+}
 .options-actions {
   display: flex;
   align-items: center;

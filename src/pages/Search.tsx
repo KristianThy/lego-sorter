@@ -6,6 +6,7 @@ import { Header } from '../components/Header'
 import { Icon } from '../components/Icon'
 import { go, setHref } from '../router'
 import { t, useLang } from '../i18n'
+import { usePref } from '../prefs'
 
 export function Search() {
   useLang()
@@ -14,6 +15,7 @@ export function Search() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [adding, setAdding] = useState<{ setNum: string; msg: string } | null>(null)
+  const [multi, setMulti] = usePref('searchMultiAdd', false)
   const mine = useLiveQuery(async () => new Set(await db.sets.toCollection().primaryKeys()), [])
   const reqId = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -49,7 +51,8 @@ export function Search() {
     try {
       const { set, parts } = await fetchSet(s.set_num, (msg) => setAdding({ setNum: s.set_num, msg }))
       await saveSet(set, parts)
-      go(setHref(set.setNum))
+      // In multi-add mode stay on the search page so more sets can be added.
+      if (!multi) go(setHref(set.setNum))
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -72,6 +75,10 @@ export function Search() {
             onChange={(e) => setQ(e.target.value)}
           />
           {loading && <span className="spinner" />}
+        </label>
+        <label className="toggle multi-toggle" title={t('search.multiHint')}>
+          <input type="checkbox" checked={multi} onChange={(e) => setMulti(e.target.checked)} />
+          {t('search.multi')}
         </label>
         {error && <p className="error">{error}</p>}
         {results && results.length === 0 && !loading && <p className="muted center">{t('search.noHits')}</p>}
