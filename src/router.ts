@@ -4,6 +4,7 @@ export type Route =
   | { name: 'home' }
   | { name: 'search' }
   | { name: 'settings' }
+  | { name: 'find' }
   | { name: 'set'; setNum: string }
 
 function parse(hash: string): Route {
@@ -12,6 +13,7 @@ function parse(hash: string): Route {
   if (m) return { name: 'set', setNum: decodeURIComponent(m[1]) }
   if (path === '/search') return { name: 'search' }
   if (path === '/settings') return { name: 'settings' }
+  if (path === '/find') return { name: 'find' }
   return { name: 'home' }
 }
 

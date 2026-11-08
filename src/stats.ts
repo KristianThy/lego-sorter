@@ -24,3 +24,9 @@ export function computeStats(parts: Part[], progress: Map<string, number>): SetS
 export function progressMap(rows: Progress[]) {
   return new Map(rows.map((r) => [r.key, r.found]))
 }
+
+/** Case-insensitive text match on a part's name, ids, colour and minifig. `term` must be lower-case. */
+export function partMatches(p: Part, term: string) {
+  const hay = `${p.name} ${p.partNum} ${p.colorName} ${p.elementId ?? ''} ${p.blPartId ?? ''} ${p.sourceName ?? ''}`.toLowerCase()
+  return hay.includes(term)
+}

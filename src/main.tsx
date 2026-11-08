@@ -4,6 +4,7 @@ import { registerSW } from 'virtual:pwa-register'
 import { getApiKey } from './api/rebrickable'
 import { useRoute } from './router'
 import { usePref } from './prefs'
+import { FindPart } from './pages/FindPart'
 import { MySets } from './pages/MySets'
 import { Search } from './pages/Search'
 import { SetDetail } from './pages/SetDetail'
@@ -32,6 +33,8 @@ function App() {
   switch (route.name) {
     case 'search':
       return <Search />
+    case 'find':
+      return <FindPart />
     case 'settings':
       return <Settings theme={theme} setTheme={setTheme} onKeyChange={checkKey} />
     case 'set':

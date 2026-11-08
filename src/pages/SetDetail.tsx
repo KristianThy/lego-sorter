@@ -9,7 +9,7 @@ import { ChipScroller } from '../components/ChipScroller'
 import { PartRow } from '../components/PartRow'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { TagDialog } from '../components/TagDialog'
-import { computeStats, progressMap } from '../stats'
+import { computeStats, partMatches, progressMap } from '../stats'
 import { go } from '../router'
 import { usePref } from '../prefs'
 import { t, useLang } from '../i18n'
@@ -77,10 +77,7 @@ export function SetDetail({ setNum }: { setNum: string }) {
       const done = f >= p.qty
       if (status === 'left' && done && !sticky.has(p.key)) return false
       if (status === 'found' && f === 0) return false
-      if (term) {
-        const hay = `${p.name} ${p.partNum} ${p.colorName} ${p.elementId ?? ''} ${p.blPartId ?? ''} ${p.sourceName ?? ''}`.toLowerCase()
-        if (!hay.includes(term)) return false
-      }
+      if (term && !partMatches(p, term)) return false
       return true
     })
   }, [parts, prog, status, showSpares, q, sticky])

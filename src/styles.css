@@ -1094,3 +1094,196 @@ select:focus {
 .select-bar .btn {
   min-width: 0;
 }
+
+/* ---------- Set search filters ---------- */
+.search-filters {
+  margin-top: -4px;
+}
+.theme-filter {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+.theme-picker {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 360px;
+}
+.theme-picker input {
+  width: 100%;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 50px 0 8px;
+  font-size: 13px;
+  text-overflow: ellipsis;
+}
+.theme-picker input:focus {
+  outline: 2px solid color-mix(in srgb, var(--text) 25%, transparent);
+  outline-offset: 0;
+}
+.theme-caret,
+.theme-clear {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.theme-caret {
+  right: 8px;
+  transform: translateY(-50%) rotate(90deg);
+  pointer-events: none;
+  transition: transform 0.15s ease;
+}
+.theme-picker.open .theme-caret {
+  transform: translateY(-50%) rotate(-90deg);
+}
+.theme-clear {
+  right: 26px;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.theme-clear:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.theme-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 30;
+  width: max(100%, 280px);
+  max-width: calc(100vw - 32px);
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
+}
+.theme-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 36px;
+  padding: 3px 8px 3px 4px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.theme-row.active {
+  background: var(--surface-2);
+}
+.theme-row.selected {
+  font-weight: 650;
+}
+.theme-chev {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+.theme-chev:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+.theme-chev svg {
+  transition: transform 0.15s ease;
+}
+.theme-chev.open svg {
+  transform: rotate(90deg);
+}
+.theme-chev-spacer {
+  flex: none;
+  width: 26px;
+}
+.theme-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding-left: 2px;
+}
+.theme-path {
+  font-size: 12px;
+  font-weight: 400;
+}
+.theme-empty {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+@media (max-width: 600px) {
+  /* 16px keeps iOS from zooming in when the field gets focus. */
+  .theme-picker input {
+    font-size: 16px;
+  }
+  .theme-picker {
+    max-width: none;
+  }
+}
+.year-input {
+  width: 72px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0 8px;
+  font-size: 13px;
+  -moz-appearance: textfield;
+}
+.year-input::-webkit-outer-spin-button,
+.year-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.year-input:focus {
+  outline: 2px solid color-mix(in srgb, var(--text) 25%, transparent);
+  outline-offset: 0;
+}
+.result-count {
+  margin: 0 0 8px 2px;
+}
+.more-row {
+  margin: 14px 0 8px;
+}
+
+/* ---------- Find part ---------- */
+.find-element {
+  margin: 0 0 4px;
+}
+.find-set-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 4px 8px;
+  text-decoration: none;
+  color: inherit;
+}
+.find-set-head > svg {
+  color: var(--muted);
+  flex: none;
+}
+.set-thumb.sm {
+  width: 52px;
+  height: 40px;
+  border-radius: 8px;
+}
+.find-more {
+  margin: 14px 0;
+}

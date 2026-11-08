@@ -277,6 +277,11 @@ export function MySets({ hasKey }: { hasKey: boolean }) {
               ) : (
                 <>
                   {sets.length > 0 && (
+                    <a className="icon-btn sm" href="#/find" aria-label={t('find.title')} title={t('find.title')}>
+                      <Icon name="search" />
+                    </a>
+                  )}
+                  {sets.length > 0 && (
                     <button className="icon-btn sm" onClick={() => startSelect()} aria-label={t('mySets.select')} title={t('mySets.select')}>
                       <Icon name="select" />
                     </button>

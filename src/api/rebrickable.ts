@@ -130,21 +130,62 @@ export async function testKey(key: string) {
   await request('/lego/colors/?page_size=1', key.trim())
 }
 
-export async function searchSets(query: string): Promise<RbSet[]> {
+export interface SetFilters {
+  themeId?: number
+  minYear?: number
+  maxYear?: number
+}
+
+export interface SetSearchPage {
+  results: RbSet[]
+  /** URL of the next page, or null on the last page. */
+  next: string | null
+  count: number
+}
+
+export const hasFilters = (f: SetFilters) => f.themeId != null || f.minYear != null || f.maxYear != null
+
+/** Search sets by text and/or filters. The query may be empty when a filter is set. */
+export async function searchSets(query: string, filters: SetFilters = {}): Promise<SetSearchPage> {
   const q = query.trim()
-  if (!q) return []
+  if (!q && !hasFilters(filters)) return { results: [], next: null, count: 0 }
   const results: RbSet[] = []
-  // Exact set number lookup first (e.g. "10270" -> "10270-1")
-  if (/^\d{3,}(-\d+)?$/.test(q)) {
+  // Exact set number lookup first (e.g. "10270" -> "10270-1"), only for an unfiltered search.
+  if (/^\d{3,}(-\d+)?$/.test(q) && !hasFilters(filters)) {
     try {
       results.push(await request<RbSet>(`/lego/sets/${encodeURIComponent(normalizeSetNum(q))}/`))
     } catch (e) {
       if (!(e instanceof ApiError && e.status === 404)) throw e
     }
   }
-  const page = await request<Page<RbSet>>(`/lego/sets/?search=${encodeURIComponent(q)}&page_size=30&ordering=-year`)
+  const params = new URLSearchParams({ page_size: '30', ordering: '-year' })
+  if (q) params.set('search', q)
+  if (filters.themeId != null) params.set('theme_id', String(filters.themeId))
+  if (filters.minYear != null) params.set('min_year', String(filters.minYear))
+  if (filters.maxYear != null) params.set('max_year', String(filters.maxYear))
+  const page = await request<Page<RbSet>>(`/lego/sets/?${params}`)
   for (const s of page.results) if (!results.some((r) => r.set_num === s.set_num)) results.push(s)
-  return results
+  // The exact hit counts extra only when the text search didn't also return it.
+  return { results, next: page.next, count: page.count + (results.length - page.results.length) }
+}
+
+/** Next page of a set search (`next` from the previous page). */
+export async function searchSetsMore(next: string): Promise<SetSearchPage> {
+  const page = await request<Page<RbSet>>(next)
+  return { results: page.results, next: page.next, count: page.count }
+}
+
+/** Resolve a LEGO element id (the number in building instructions) to part + colour. */
+export async function lookupElement(elementId: string): Promise<{ partNum: string; colorId: number; colorName: string } | null> {
+  try {
+    const el = await request<{ part: { part_num: string }; color: { id: number; name: string } }>(
+      `/lego/elements/${encodeURIComponent(elementId)}/`,
+    )
+    return { partNum: el.part.part_num, colorId: el.color.id, colorName: el.color.name }
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 404) return null
+    throw e
+  }
 }
 
 export async function getCategories(): Promise<Record<number, string>> {
